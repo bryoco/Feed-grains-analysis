@@ -1,7 +1,10 @@
-library('dplyr')
-library('ggplot2')
+library("dplyr")
+library("ggplot2")
 library("shiny")
+library("shinythemes")
 library("stringr")
+library("maps")
+library("countrycode")
 
 
 source("my_ui.R")
