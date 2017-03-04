@@ -20,7 +20,9 @@ my.ui <- fluidPage(
   sidebarLayout(
     
     sidebarPanel(
-      selectInput('place', label = 'US City', choices = unique(market.grains$SC_GeographyIndented_Desc, selected = "U.S. - Memphis, TN"))
+      selectInput('place', label = 'US City', 
+                  choices = unique(market.grains$SC_GeographyIndented_Desc, 
+                                   selected = "U.S. - Memphis, TN"))
     ),
   
   mainPanel(

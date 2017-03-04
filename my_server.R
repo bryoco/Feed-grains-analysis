@@ -10,7 +10,6 @@ server <- function(input, output) {
   
   sample.grains <- sample_n(grains, 10000)
   
-  
   which.city <- reactive({
      filter(market.grains, input$place == SC_GeographyIndented_Desc)
   })
@@ -26,12 +25,15 @@ server <- function(input, output) {
     return(city)
   })
   
-  all.rel.grains <- filter(sample.grains) %>% 
-    filter(unlist(SC_GeographyIndented_Desc) %in% c("Asia", "Europe/Eurasia", "Oceania", "Canada", "Mexico", "South America", "Africa"))
+  all.rel.grains <- 
+    filter(sample.grains) %>% 
+    filter(unlist(SC_GeographyIndented_Desc) %in% 
+             c("Asia", "Europe/Eurasia", "Oceania", "Canada", "Mexico", "South America", "Africa"))
   
   output$plot2 <- renderPlot({
     
-    facet.country.plot <- ggplot(data = all.rel.grains) +
+    facet.country.plot <- 
+      ggplot(data = all.rel.grains) +
       geom_point(mapping = aes(x = Year_ID, y = Amount, color = SC_Attribute_Desc)) +
       facet_wrap(~SC_GeographyIndented_Desc) +
       labs(x = "Year", y = "Price (Respective Scales of Product)", title = "Change in Feed Prices") +
@@ -41,7 +43,8 @@ server <- function(input, output) {
     return(facet.country.plot)
   })
   
-  farm.price.change <- filter(grains,  SC_Group_Desc %in% c("Corn", "Oats", "Barley", "Sorghum", "Prices")) %>%
+  farm.price.change <- 
+    filter(grains, SC_Group_Desc %in% c("Corn", "Oats", "Barley", "Sorghum", "Prices")) %>%
     filter(SC_GeographyIndented_Desc == 'United States')
   
   output$plot3 <- renderPlot({
