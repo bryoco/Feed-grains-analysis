@@ -164,32 +164,25 @@ my.server <- function(input, output) {
     return(data)
   })
   
-  output$debug1 <- renderDataTable({
-    return(input)
-  })
-  
-  output$debug2 <- renderDataTable({
-    return(imex.all)
-  })
-  
-  # # Preparing map data
-  # world <- map_data("world")
-  # world <- world[world$region != "Antarctica",] # no country is in Antarctica
-  # world$ISO3 <- countrycode(world$region, "country.name", "iso3c")
-  # world$region <- NULL # dont need region
-  # world <- right_join(countries, world) %>% 
-  #   filter(!is.na(SC_Geography_ID))
-  
+  # Preparing map data
+  world <- map_data("world")
+  world <- world[world$region != "Antarctica",] # no country is in Antarctica
+  world$ISO3 <- countrycode(world$region, "country.name", "iso3c")
+  world$region <- NULL # dont need region
+  world <- 
+    right_join(countries, world) %>%
+    filter(!is.na(SC_Geography_ID))
+
   # Preparing imex data
-  # world.combined <- right_join(world, imex.reactive)
-  # world.combined$subregion <- NULL # dont neet subregion
-  # 
-  # output$map <- renderPlot({
-  #   map <-
-  #     ggplot(data = world.combined) +
-  #     geom_polygon(aes(x = long, y = lat, group = group, fill = Amount)) +
-  #     coord_quickmap()
-  #   
-  #   return(map)
-  # })
+  world.combined <- right_join(world, imex.reactive())
+  world.combined$subregion <- NULL # dont neet subregion
+  
+  output$map <- renderPlot({
+    map <-
+      ggplot(data = world.combined) +
+      geom_polygon(aes(x = long, y = lat, group = group, fill = Amount)) +
+      coord_quickmap()
+
+    return(map)
+  })
 }

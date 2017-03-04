@@ -53,13 +53,7 @@ my.ui <- fluidPage(
                   tabPanel("Plot5", plotOutput('plot5')),
                   tabPanel("Plot6", plotOutput('plot6')),
                   # Map
-                  tabPanel("Map", 
-                          
-                           dataTableOutput('debug1'),
-                           dataTableOutput('debug2')
-                           
-                           #plotOutput('map')
-                           )
+                  tabPanel("Map", plotOutput('map'))
                   )
     )
   )
