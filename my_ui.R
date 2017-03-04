@@ -13,8 +13,7 @@ market.grains <- filter(grains, SC_Attribute_Desc == 'Prices, market') %>%
   filter(SC_Frequency_Desc == 'Annual') %>% 
   filter(SC_Unit_Desc == 'Dollars per bushel')
 
-my.ui <- fluidPage(
-  
+my.ui <- fluidPage(theme = shinytheme('sandstone'),
   titlePanel("US City Grain Prices"),
   
   sidebarLayout(
@@ -31,7 +30,8 @@ my.ui <- fluidPage(
           tabPanel("Plot2" , plotOutput('plot2')),
           tabPanel("Plot3" , plotOutput('plot3')),
           tabPanel("Plot4" , plotOutput('plot4')),
-          tabPanel("Plot5" , plotOutput('plot5'))
+          tabPanel("Plot5" , plotOutput('plot5')),
+          tabPanel("Plot6" , plotOutput('plot6'))
   )
   )
 ))
