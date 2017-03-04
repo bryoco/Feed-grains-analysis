@@ -41,8 +41,10 @@ server <- function(input, output) {
     return(facet.country.plot)
   })
   
-  farm.price.change <- filter(grains,  SC_Group_Desc %in% c("Corn", "Oats", "Barley", "Sorghum", "Prices")) %>%
-    filter(SC_GeographyIndented_Desc == 'United States')
+  farm.price.change <- filter(grains, SC_Group_Desc == "Prices") %>% ## Needed merge conflict/change
+    filter(SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
+       filter(SC_GeographyIndented_Desc == 'United States') 
+       
   
   output$plot3 <- renderPlot({
     prices.farmers <- ggplot(data = farm.price.change) +
@@ -50,7 +52,7 @@ server <- function(input, output) {
       facet_wrap(~SC_GroupCommod_Desc) +
       labs(x = "Year", y = "Price (Respective Scales of Product)", title = "Change in Farmer Compensation") +
       scale_color_discrete(name  = "Product") +
-      ylim(0, 25) +
+      ylim(0, 13) +
       geom_smooth(mapping = aes(x = Year_ID, y = Amount, color = SC_Attribute_Desc), color = "blue")
     return(prices.farmers)
   })
@@ -80,6 +82,27 @@ server <- function(input, output) {
       geom_smooth(mapping = aes(x = Year_ID, y = Amount, color = SC_GroupCommod_Desc))
     return(market.price)
   })
+  
+  import.countries <- filter(grains, SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
+     filter(SC_Attribute_Desc %in% c("Imports, to U.S. from specified source", "Exports, from U.S. to specified destination")) %>% 
+        filter(SC_Frequency_Desc == 'Annual') %>% 
+           select(SC_Frequency_Desc, SC_GroupCommod_Desc, SC_Attribute_Desc, SC_GeographyIndented_Desc, Amount, Year_ID) %>% 
+              group_by(SC_GroupCommod_Desc, Year_ID, SC_Attribute_Desc) %>% 
+                  summarize(Amount = sum(Amount))
+  
+  output$plot6 <- renderPlot({
+    country.port <- ggplot(data = import.countries) +
+      geom_point(mapping = aes(x = Year_ID, y = Amount, color = SC_GroupCommod_Desc)) +
+      geom_smooth(mapping = aes(x = Year_ID, y = Amount, color = SC_GroupCommod_Desc)) +
+      facet_wrap(~SC_Attribute_Desc)
+    return(country.port)
+  })
+  
+  import.sums <- filter(grains, SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
+    filter(SC_Attribute_Desc %in% c("Imports, to U.S. from specified source", "Exports, from U.S. to specified destination")) %>% 
+    filter(SC_Frequency_Desc == 'Annual') %>% 
+    group_by(SC_GroupCommod_Desc, SC_Attribute_Desc) %>% 
+    summarize(sum = sum(Amount))
   
 
 }
