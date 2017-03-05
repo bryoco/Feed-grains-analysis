@@ -158,7 +158,7 @@ my.server <- function(input, output) {
     data <- 
       imex.all %>%
       filter(SC_Attribute_Desc == input$imex) %>% 
-      filter(SC_GroupCommod_Desc == input$grain) %>% 
+      filter(SC_Commodity_Desc == input$grain) %>% 
       filter(Year_ID == input$year)
 
     return(data)
@@ -174,12 +174,17 @@ my.server <- function(input, output) {
     filter(!is.na(SC_Geography_ID))
 
   # Preparing imex data
-  world.combined <- right_join(world, imex.reactive())
-  world.combined$subregion <- NULL # dont neet subregion
+  world.combined <- reactive({
+    data <- right_join(world, imex.reactive())
+    data$subregion <- NULL # dont neet subregion
+    
+    return(data)
+  })
+  
   
   output$map <- renderPlot({
     map <-
-      ggplot(data = world.combined) +
+      ggplot(data = world.combined()) +
       geom_polygon(aes(x = long, y = lat, group = group, fill = Amount)) +
       coord_quickmap()
 
