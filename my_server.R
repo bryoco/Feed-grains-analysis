@@ -47,11 +47,6 @@ my.server <- function(input, output) {
     return(facet.country.plot)
   })
   
-  farm.price.change <- 
-    filter(grains, SC_Group_Desc == "Prices") %>%
-    filter(SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
-    filter(SC_GeographyIndented_Desc == 'United States') 
-  
   output$plot3 <- renderPlot({
     prices.farmers <- 
       ggplot(data = farm.price.change) +
@@ -66,8 +61,9 @@ my.server <- function(input, output) {
   })
   
   prices.grains <- 
-    filter(grains, SC_Group_Desc == 'Prices') %>%
-    filter(SC_Frequency_Desc == 'Annual')
+    filter(grains, SC_Attribute_Desc %in% c('Prices, market', 'Prices received by farmers')) %>%
+       filter(SC_Frequency_Desc == 'Annual') %>% 
+          filter(SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum"))
   
   # View(prices.grains)
 
@@ -76,7 +72,7 @@ my.server <- function(input, output) {
       ggplot(data = prices.grains) +
       geom_point(mapping = aes(x = Year_ID, y = Amount, color = SC_Attribute_Desc)) +
       labs(x = "Year", y = "Price (Respective Scales of Product)", title = "Change in Feed Prices") +
-      geom_smooth(mapping = aes(x = Year_ID, y = Amount, color = SC_Attribute_Desc))+
+      geom_smooth(mapping = aes(x = Year_ID, y = Amount), color = 'black')+
       scale_color_discrete(name  = "Product")
     
     return(years.change)
@@ -123,6 +119,87 @@ my.server <- function(input, output) {
     group_by(SC_GroupCommod_Desc, SC_Attribute_Desc) %>% 
     summarize(sum = sum(Amount))
   
+  
+  ##################
+  farm.price.change <- 
+      grains %>% 
+        filter(SC_Commodity_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
+          filter(SC_GeographyIndented_Desc == 'United States') %>% 
+           filter(SC_Attribute_Desc %in% c('Prices received by farmers')) %>% 
+             filter(Year_ID > 1988 & Year_ID < 2016) %>% 
+               filter(SC_Frequency_Desc == 'Annual') %>% 
+                filter(!(SC_GroupCommod_Desc == 'Oats' & (Year_ID == 2000 | Year_ID == 2001))) %>% 
+                 group_by(Year_ID, SC_GroupCommod_Desc, SC_Attribute_Desc) %>% 
+                   summarize(average.years = mean(Amount)) %>% 
+                     arrange(Year_ID)
+  
+  prices.grains.market <- 
+    filter(grains, SC_Attribute_Desc %in% c('Prices, market')) %>%
+       filter(SC_Frequency_Desc == 'Annual') %>% 
+           filter(SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
+             filter(Year_ID > 1988) %>% 
+               group_by(Year_ID, SC_GroupCommod_Desc, SC_Attribute_Desc) %>% 
+                 summarize(average.years = mean(Amount)) %>% 
+                    arrange(Year_ID)
+    
+  
+  import.countries.spef <- 
+    filter(grains, SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
+    filter(SC_Attribute_Desc %in% c("Imports, to U.S. from specified source")) %>% 
+    filter(SC_Frequency_Desc == 'Annual') %>% 
+    filter(Year_ID < 2016) %>% 
+    filter(!(SC_GroupCommod_Desc == 'Oats' & (Year_ID == 2000 | Year_ID == 2001))) %>% 
+    select(SC_Frequency_Desc, SC_GroupCommod_Desc, SC_Attribute_Desc, SC_GeographyIndented_Desc, Amount, Year_ID) %>% 
+    group_by(SC_GroupCommod_Desc, Year_ID, SC_Attribute_Desc) %>% 
+    summarize(Amount = sum(Amount))
+  
+  export.countries.spef <- 
+    filter(grains, SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
+      filter(SC_Attribute_Desc %in% c("Exports, from U.S. to specified destination")) %>% 
+        filter(SC_Frequency_Desc == 'Annual') %>% 
+         filter(Year_ID < 2016) %>% 
+           filter(!(SC_GroupCommod_Desc == 'Oats' & (Year_ID == 2000 | Year_ID == 2001))) %>% 
+             select(SC_Frequency_Desc, SC_GroupCommod_Desc, SC_Attribute_Desc, SC_GeographyIndented_Desc, Amount, Year_ID) %>% 
+               group_by(SC_GroupCommod_Desc, Year_ID, SC_Attribute_Desc) %>% 
+                 summarize(Amount = sum(Amount))
+  
+  ##############################################################################
+  # 
+  import.countries.spef <- 
+    filter(grains, SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
+     filter(SC_Attribute_Desc %in% c("Imports, to U.S. from specified source")) %>% 
+       filter(SC_Frequency_Desc == 'Annual') %>% 
+         filter(Year_ID < 2016) %>% 
+          filter(SC_GeographyIndented_Desc == 'China (Mainland)') %>% 
+           filter(!(SC_GroupCommod_Desc == 'Oats' & (Year_ID == 2000 | Year_ID == 2001))) %>% 
+             select(SC_Frequency_Desc, SC_GroupCommod_Desc, SC_Attribute_Desc, SC_GeographyIndented_Desc, Amount, Year_ID) %>% 
+               group_by(SC_GroupCommod_Desc, Year_ID, SC_Attribute_Desc) %>% 
+                 summarize(Amount = sum(Amount))
+  
+  farm.market.dif <- prices.grains.market$average.years - farm.price.change$average.years
+  ex.im.dif <- export.countries.spef$Amount - import.countries.spef$Amount
+  farm.market <- data.frame(farm.market.dif, ex.im.dif, grain = export.countries.spef$SC_GroupCommod_Desc)
+  
+  money <- ggplot(data = farm.market, aes(y = farm.market.dif, x = ex.im.dif)) +
+    geom_point(aes(color = grain))
+  money # Market (high) - farmer (low) : export (high) - import (low) :: High/High = market high, export high. High/Low = e
+  
+  ##############################################################################
+  ## 4 graphs imex market/farm
+  market.dif <- prices.grains.market$average.years[!(prices.grains.market$Year_ID == 1989)] - prices.grains.market$average.years[!(prices.grains.market$Year_ID == 2015)]
+  farm.dif <- farm.price.change$average.years[!(farm.price.change$Year_ID == 1989)] - farm.price.change$average.years[!(farm.price.change$Year_ID == 2015)]
+  ex.dif <- export.countries.spef$Amount[!(export.countries.spef$Year_ID == 1989)] - export.countries.spef$Amount[!(export.countries.spef$Year_ID == 2015)]
+  im.dif <- import.countries.spef$Amount[!(import.countries.spef$Year_ID == 1989)] - import.countries.spef$Amount[!(import.countries.spef$Year_ID == 2015)]
+  farm.market <- data.frame(market.dif, ex.dif, grains = export.countries.spef$SC_GroupCommod_Desc[!(export.countries.spef$Year_ID == 1989)])
+  
+  money <- ggplot(data = farm.market, aes(y = market.dif, x = im.dif)) +
+    geom_point(aes(color = grains)) +
+    xlim(-100000000, 100000000) + #ex: 100000000
+    ylim(-2, 2) +
+    geom_smooth(aes(color = grains))
+  money # Market (high) - farmer (low) : export (high) - import (low) :: High/High = market high, export high. High/Low = e
+  
+  ##############################################################################
   
   # MAPS #
   

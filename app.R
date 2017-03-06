@@ -10,4 +10,4 @@ library("countrycode")
 source("my_ui.R")
 source("my_server.R")
 
-shinyApp(ui = my.ui, server = server)
+shinyApp(ui = my.ui, server = my.server)

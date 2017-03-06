@@ -25,7 +25,7 @@ market.grains <-
   filter(SC_Unit_Desc == 'Dollars per bushel')
 
 my.ui <- fluidPage(
-  # theme = shinytheme('sandstone'),
+  theme = shinytheme('sandstone'),
   titlePanel("US City Grain Prices"),
   
   sidebarLayout(
@@ -46,7 +46,7 @@ my.ui <- fluidPage(
     
     mainPanel(
       tabsetPanel(type = "tabs",
-                  tabPanel("Plot1", plotOutput('plot1')),
+                  tabPanel("Plot1", textOutput("Agriculture is becoming increasingly valuable as we enter an age where food production is "), plotOutput('plot1')),
                   tabPanel("Plot2", plotOutput('plot2')),
                   tabPanel("Plot3", plotOutput('plot3')),
                   tabPanel("Plot4", plotOutput('plot4')),
