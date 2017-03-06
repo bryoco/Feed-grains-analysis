@@ -14,10 +14,10 @@ library("leaflet")
 # https://rpubs.com/walkerke/leaflet_choropleth
 
 # Load data
-grains <- read.csv("feedgrains.csv", stringsAsFactors = FALSE, strip.white = TRUE)
+grains <- read.csv("./data/FeedGrains.csv", stringsAsFactors = FALSE, strip.white = TRUE)
 
 # World GeoJSON data
-world.geojson <- geojson_read("./countries.geo.json")
+world.geojson <- geojson_read("./json/countries.geo.json")
 
 # Range of year used in map
 years <- grains %>% 
@@ -33,8 +33,8 @@ my.ui <- fluidPage(
                           
                           tags$head(
                             # Include our custom CSS
-                            includeCSS("styles.css"),
-                            includeScript("gomap.js")
+                            includeCSS("./css/styles.css"),
+                            includeScript("./javascript/gomap.js")
                           ),
                           
                           leafletOutput("map", width="100%", height="100%"),
@@ -65,16 +65,6 @@ my.ui <- fluidPage(
 
 
 my.server <- function(input, output) {
-  
-  # Create the map
-  output$map <- renderLeaflet({
-    leaflet() %>%
-      addTiles(
-        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
-        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
-      ) %>%
-      setView(lng = -93.85, lat = 37.45, zoom = 4)
-  })
     
   # Countries in interest
   countries <-
@@ -129,6 +119,19 @@ my.server <- function(input, output) {
     data$subregion <- NULL # dont neet subregion
     
     return(data)
+  })
+  
+  # Create the map
+  output$map <- renderLeaflet({
+    m <-
+      leaflet() %>%
+      addTiles(
+        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
+      ) %>%
+      setView(lng = -93.85, lat = 37.45, zoom = 4) 
+    
+    return(m)
   })
   
 }
