@@ -1,18 +1,13 @@
-# 1. Draw the map - done
-# 2. Overlay choropleth titles (leaflet::addPolygons() maybe)
-#     1. Normalize imex data 
-#     2. Normalize world coordinates <-- data inconsistency, leaflet needs json
-# 3. Add popups
 
 
-world.geojson <- geojson_read("./countries.geo.json", what = "sp")
+world.geojson <- geojson_read("./json/countries.geo.json", what = "sp")
 
 m <- leaflet(world.geojson) %>%
   setView(-96, 37.8, 4) %>%
   addProviderTiles("MapBox", options = providerTileOptions(
     id = "mapbox.light",
     accessToken = 
-      Sys.getenv('pk.eyJ1IjoiYnJ5b2NvIiwiYSI6ImNpenhzd2sxaDAyZXIzMms3anB2YnBmZnAifQ.yUJFrNDonPhL-W1bHC-WXg')))
+      'pk.eyJ1IjoiYnJ5b2NvIiwiYSI6ImNpenhzd2sxaDAyZXIzMms3anB2YnBmZnAifQ.yUJFrNDonPhL-W1bHC-WXg'))
 
 m %>% addPolygons()
 
@@ -34,8 +29,8 @@ m %>% addPolygons(
 
 
 m1 = map(world, fill = TRUE, plot = FALSE)
-m1 <- 
-  leaflet(data = m1) %>% addTiles() %>%
+m1 <- leaflet(data = m1) %>% 
+  addTiles() %>%
   addPolygons(fillColor = topo.colors(10, alpha = NULL), stroke = FALSE)
 
 
