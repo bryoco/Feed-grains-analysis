@@ -76,67 +76,93 @@ my.ui <- fluidPage(
 
 my.server <- function(input, output) {
     
-  # # Countries in interest
-  # countries <-
-  #   grains %>% 
-  #   select(SC_Geography_ID, SC_GeographyIndented_Desc) %>% 
-  #   unique() %>% 
-  #   mutate(ISO3 = countrycode(SC_GeographyIndented_Desc, "country.name", "iso3c")) %>% 
-  #   filter(!is.na(ISO3))
-  # 
-  # # Remove unnecessary regions
-  # countries <- countries[!(grepl("U.S. -", countries$SC_GeographyIndented_Desc) | 
-  #                            grepl("45", countries$SC_Geography_ID) | # Former Soviet Union-12
-  #                            grepl("128", countries$SC_Geography_ID)),] # Former USSR
-  # 
-  # # Import and export, by annual
-  # imex.all <- 
-  #   grains %>% 
-  #   filter(SC_Frequency_Desc == "Annual") %>%
-  #   filter(SC_Group_Desc == "Exports and imports")
-  # 
-  # # Remove unnecessary fields
-  # imex.all <- imex.all[!(grepl("1,000 liters", imex.all$SC_Unit_Desc)),] # alcohol
-  # drops <- c("SC_Group_ID", "SC_Group_Desc", "SC_GroupCommod_ID", "SortOrder", 
-  #            "SC_Commodity_ID", "SC_Attribute_ID", "SC_Unit_ID", "SC_Frequency_ID", 
-  #            "Timeperiod_ID", "Timeperiod_Desc")
-  # imex.all <- imex.all[, !(names(imex.all) %in% drops)]
-  # # Countries in interest
-  # imex.all <- filter(imex.all, SC_Geography_ID %in% unlist(countries$SC_Geography_ID))
-  # 
+  # Countries in interest
+  countries <-
+    grains %>%
+    select(SC_Geography_ID, SC_GeographyIndented_Desc) %>%
+    unique() %>%
+    mutate(ISO3 = countrycode(SC_GeographyIndented_Desc, "country.name", "iso3c")) %>%
+    filter(!is.na(ISO3))
+
+  # Remove unnecessary regions
+  countries <- countries[!(grepl("U.S. -", countries$SC_GeographyIndented_Desc) |
+                             grepl("45", countries$SC_Geography_ID) | # Former Soviet Union-12
+                             grepl("128", countries$SC_Geography_ID)),] # Former USSR
+
+  # Import and export, by annual
+  imex.all <-
+    grains %>%
+    filter(SC_Frequency_Desc == "Annual") %>%
+    filter(SC_Group_Desc == "Exports and imports")
+
+  # Remove unnecessary fields
+  imex.all <- imex.all[!(grepl("1,000 liters", imex.all$SC_Unit_Desc)),] # alcohol
+  drops <- c("SC_Group_ID", "SC_Group_Desc", "SC_GroupCommod_ID", "SortOrder",
+             "SC_Commodity_ID", "SC_Attribute_ID", "SC_Unit_ID", "SC_Frequency_ID",
+             "Timeperiod_ID", "Timeperiod_Desc")
+  imex.all <- imex.all[, !(names(imex.all) %in% drops)]
+  # Countries in interest
+  imex.all <- filter(imex.all, SC_Geography_ID %in% unlist(countries$SC_Geography_ID))
+
   # # Preparing map data
+  # # Deprecated from `leaflet`
   # world <- map_data("world")
   # world <- world[world$region != "Antarctica",] # no country is in Antarctica
   # world$ISO3 <- countrycode(world$region, "country.name", "iso3c")
   # world$region <- NULL # dont need region
-  # world <- 
+  # world <-
   #   right_join(countries, world) %>%
   #   filter(!is.na(SC_Geography_ID))
-  # 
-  # # Preparing imex data
-  # imex.reactive <- reactive({
-  #   data <- 
-  #     imex.all %>%
-  #     filter(SC_Attribute_Desc == input$imex) %>% 
-  #     filter(SC_Commodity_Desc == input$grain) %>% 
-  #     filter(Year_ID == input$year)
-  #   
-  #   # combine world data
-  #   data <- right_join(world, imex.reactive())
-  #   data$subregion <- NULL # dont neet subregion
-  #   
-  #   return(data)
-  # })
+
+  # Preparing imex data
+  imex.reactive <- reactive({
+    data <-
+      imex.all %>%
+      filter(SC_Attribute_Desc == input$imex) %>%
+      filter(SC_Commodity_Desc == input$grain) %>%
+      filter(Year_ID == input$year)
+
+    # # combine world data
+    # # Deprecated from `leaflet`
+    # data <- right_join(world, imex.reactive())
+    # data$subregion <- NULL # dont neet subregion
+
+    return(data)
+  })
+  
+  # Load geojson
+  world.geojson <- geojson_read("./json/countries.geo.json", what = "sp")
+  
+  bins <- c(0, 10, 20, 50, 100, 200, 500, 1000, Inf)
+  
   
   # Create the map
   output$map <- renderLeaflet({
-    m <-
-      leaflet() %>%
-      addTiles(
-        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
-        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
-      ) %>%
-      setView(lng = -93.85, lat = 37.45, zoom = 4) 
+    # m <-
+    #   leaflet() %>%
+    #   addTiles(
+    #     urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+    #     attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
+    #   ) %>%
+    #   setView(lng = -93.85, lat = 37.45, zoom = 4) 
+    
+    pal <- colorBin("YlOrRd", domain = imex.reactive()$Amount, bins = bins)
+    
+    m <- 
+      leaflet(world.geojson) %>%
+      setView(-96, 37.8, 4) %>%
+      addProviderTiles("MapBox", options = providerTileOptions(
+        id = "mapbox.light",
+        accessToken = 
+          'pk.eyJ1IjoiYnJ5b2NvIiwiYSI6ImNpenhzd2sxaDAyZXIzMms3anB2YnBmZnAifQ.yUJFrNDonPhL-W1bHC-WXg')) %>% 
+      addPolygons() %>% 
+      addPolygons(
+        fillColor = ~pal(imex.reactive()$Amount),
+        weight = 2,
+        opacity = 1,
+        color = "white",
+        dashArray = "3",
+        fillOpacity = 0.7)
     
     return(m)
   })
