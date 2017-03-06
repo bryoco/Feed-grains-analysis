@@ -1,3 +1,10 @@
+# 1. Draw the map - done
+# 2. Overlay choropleth titles (leaflet::addPolygons() maybe)
+#     1. Normalize imex data 
+#     2. Normalize world coordinates <-- data inconsistency, leaflet needs json
+# 3. Add popups
+
+
 world.geojson <- geojson_read("./countries.geo.json", what = "sp")
 
 m <- leaflet(world.geojson) %>%
@@ -23,3 +30,14 @@ m %>% addPolygons(
   color = "white",
   dashArray = "3",
   fillOpacity = 0.7)
+
+
+
+m1 = map(world, fill = TRUE, plot = FALSE)
+m1 <- 
+  leaflet(data = m1) %>% addTiles() %>%
+  addPolygons(fillColor = topo.colors(10, alpha = NULL), stroke = FALSE)
+
+
+
+

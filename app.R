@@ -94,16 +94,6 @@ my.server <- function(input, output) {
   # Countries in interest
   imex.all <- filter(imex.all, SC_Geography_ID %in% unlist(countries$SC_Geography_ID))
   
-  imex.reactive <- reactive({
-    data <- 
-      imex.all %>%
-      filter(SC_Attribute_Desc == input$imex) %>% 
-      filter(SC_Commodity_Desc == input$grain) %>% 
-      filter(Year_ID == input$year)
-    
-    return(data)
-  })
-  
   # Preparing map data
   world <- map_data("world")
   world <- world[world$region != "Antarctica",] # no country is in Antarctica
@@ -114,7 +104,14 @@ my.server <- function(input, output) {
     filter(!is.na(SC_Geography_ID))
   
   # Preparing imex data
-  world.combined <- reactive({
+  imex.reactive <- reactive({
+    data <- 
+      imex.all %>%
+      filter(SC_Attribute_Desc == input$imex) %>% 
+      filter(SC_Commodity_Desc == input$grain) %>% 
+      filter(Year_ID == input$year)
+    
+    # combine world data
     data <- right_join(world, imex.reactive())
     data$subregion <- NULL # dont neet subregion
     
