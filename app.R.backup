@@ -15,6 +15,7 @@ library("jsonlite")
 ### some sources
 # http://rstudio.github.io/leaflet/choropleths.html
 # https://rpubs.com/walkerke/leaflet_choropleth
+# http://stackoverflow.com/questions/33274978/shiny-leaflet-map-with-multiple-observers
 
 ### Todos
 # 1. Draw the map - done
