@@ -8,6 +8,9 @@ library("countrycode")
 library("RColorBrewer")
 library("geojsonio")
 library("leaflet")
+library("DT")
+library("htmltools")
+library("jsonlite")
 
 ### some sources
 # http://rstudio.github.io/leaflet/choropleths.html
@@ -60,7 +63,7 @@ my.ui <- fluidPage(
                                                                                "Exports, from U.S. to specified destination")),
                                         selectInput("grain", "Grain type", c("Barley", "Corn", "Oats", "Sorghum"),
                                                     selected = "Corn"),
-                                        sliderInput('year', "Year", min = year.range[1], max = year.range[2], value = 2016, step = 1),
+                                        sliderInput("year", "Year", min = year.range[1], max = year.range[2], value = 2016, step = 1),
                                         
                                         plotOutput("all_year", height = 200) # all year import export
                           ),
@@ -69,7 +72,16 @@ my.ui <- fluidPage(
                                    'Data compiled for ', tags$em('Feed Grains Database'), ' by United States Department of Agriculture Economic Research Service.'
                           )
                       )
-             )
+             ),
+             
+             tabPanel("Data viewer",
+                      selectInput("imex1", "Import/Export", c("Imports, to U.S. from specified source",
+                                                             "Exports, from U.S. to specified destination")),
+                      selectInput("grain1", "Grain type", c("Barley", "Corn", "Oats", "Sorghum"),
+                                  selected = "Corn"),
+                      sliderInput("year1", "Year", min = year.range[1], max = year.range[2], value = 2016, step = 1),
+                      DT::dataTableOutput("datatable")
+                      )
   )
 )
 
@@ -121,6 +133,9 @@ my.server <- function(input, output) {
       filter(SC_Attribute_Desc == input$imex) %>%
       filter(SC_Commodity_Desc == input$grain) %>%
       filter(Year_ID == input$year)
+    
+    # Mutate ISO3
+    data$id <- countrycode(data$SC_GeographyIndented_Desc, "country.name", "iso3c")
 
     # # combine world data
     # # Deprecated from `leaflet`
@@ -133,8 +148,7 @@ my.server <- function(input, output) {
   # Load geojson
   world.geojson <- geojson_read("./json/countries.geo.json", what = "sp")
   
-  bins <- c(0, 10, 20, 50, 100, 200, 500, 1000, Inf)
-  
+  bins <- c(1, 20, 50, 100, 200, 500, 1000, 2000, Inf)
   
   # Create the map
   output$map <- renderLeaflet({
@@ -148,6 +162,11 @@ my.server <- function(input, output) {
     
     pal <- colorBin("YlOrRd", domain = imex.reactive()$Amount, bins = bins)
     
+    labels <- sprintf(
+      "<strong>%s</strong><br/>%g 1000 metric tons",
+      imex.reactive()$SC_GeographyIndented_Desc, imex.reactive()$Amount
+    ) %>% lapply(htmltools::HTML)
+    
     m <- 
       leaflet(world.geojson) %>%
       setView(-96, 37.8, 4) %>%
@@ -155,16 +174,48 @@ my.server <- function(input, output) {
         id = "mapbox.light",
         accessToken = 
           'pk.eyJ1IjoiYnJ5b2NvIiwiYSI6ImNpenhzd2sxaDAyZXIzMms3anB2YnBmZnAifQ.yUJFrNDonPhL-W1bHC-WXg')) %>% 
-      addPolygons() %>% 
       addPolygons(
         fillColor = ~pal(imex.reactive()$Amount),
         weight = 2,
         opacity = 1,
         color = "white",
         dashArray = "3",
-        fillOpacity = 0.7)
+        fillOpacity = 0.7,
+        highlight = highlightOptions(
+          weight = 5,
+          color = "#666",
+          dashArray = "",
+          fillOpacity = 0.7,
+          bringToFront = TRUE),
+        label = labels,
+        labelOptions = labelOptions(
+          style = list("font-weight" = "normal", "padding" = "3px 8px"),
+          textsize = "15px",
+          direction = "auto")) %>%
+      # add legends
+      addLegend(pal = pal, values = ~imex.reactive()$Amount, opacity = 0.7, title = NULL, position = "bottomright")
     
     return(m)
+  })
+  
+  datatable.reactive <- reactive({
+    data <-
+      imex.all %>%
+      filter(SC_Attribute_Desc == input$imex1) %>%
+      filter(SC_Commodity_Desc == input$grain1) %>%
+      filter(Year_ID == input$year1)
+    
+    # # combine world data
+    # # Deprecated from `leaflet`
+    # data <- right_join(world, imex.reactive())
+    # data$subregion <- NULL # dont neet subregion
+    
+    return(data)
+  })
+  
+  # Create data table
+  output$datatable <- DT::renderDataTable({
+    return(datatable.reactive())
   })
   
 }
