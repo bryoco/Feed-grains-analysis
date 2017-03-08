@@ -49,3 +49,8 @@ imex <- filter(imex, SC_GeographyIndented_Desc %in% unlist(countries$SC_Geograph
 
 # Mutate ISO3 for `imex`
 imex <- mutate(imex, ISO3 = countrycode(SC_GeographyIndented_Desc, "country.name", "iso3c"))
+
+canada.imex.barley <- filter(imex, imex$ISO3 == "CAN", SC_Commodity_Desc == "Barley")
+canada.imex.oats <- filter(imex, imex$ISO3 == "CAN", SC_Commodity_Desc == "Oats")
+china.imex.barley <- filter(imex, imex$ISO3 == "CHN", SC_Commodity_Desc == "Barley")
+china.imex.oats <- filter(imex, imex$ISO3 == "CHN", SC_Commodity_Desc == "Oats")
