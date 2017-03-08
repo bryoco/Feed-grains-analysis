@@ -21,7 +21,7 @@ imex.all <-
 imex.all <- imex.all[!(grepl("1,000 liters", imex.all$SC_Unit_Desc)),] # alcohol
 drops <- c("SC_Group_ID", "SC_Group_Desc", "SC_GroupCommod_ID", "SortOrder",
            "SC_Commodity_ID", "SC_Attribute_ID", "SC_Unit_ID", "SC_Frequency_ID",
-           "Timeperiod_ID", "Timeperiod_Desc")
+           "Timeperiod_ID", "Timeperiod_Desc", "SC_Geography_ID")
 imex.all <- imex.all[, !(names(imex.all) %in% drops)]
 
 # Countries in interest
@@ -74,3 +74,14 @@ m <-
       direction = "auto")) %>%
       # add legends
       addLegend(pal = pal, values = ~imex.reactive()$Amount, opacity = 0.7, title = NULL, position = "bottomright")
+
+
+
+
+
+
+
+
+mapStates = map(fill = TRUE, plot = FALSE)
+leaflet(data = mapStates) %>% addTiles() %>%
+  addPolygons(fillColor = topo.colors(10, alpha = NULL), stroke = FALSE)

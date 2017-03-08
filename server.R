@@ -1,98 +1,22 @@
-### Deprecated from app.R
-
-library("dplyr")
-library("ggplot2")
-library("shiny")
-library("shinythemes")
-library("stringr")
-library("maps")
-library("countrycode")
-library("RColorBrewer")
-library("geojsonio")
-library("leaflet")
-library("DT")
-library("htmltools")
-library("jsonlite")
-
-# Load data
-grains <- read.csv("./data/FeedGrains.csv", stringsAsFactors = FALSE, strip.white = TRUE)
-
-# World GeoJSON data
-world.geojson <- geojson_read("./json/countries.geo.json")
+world <- read.csv("./data/map_data.csv", stringsAsFactors = FALSE)
 
 my.server <- function(input, output) {
-  
-  # Countries in interest
-  countries <-
-    grains %>%
-    select(SC_Geography_ID, SC_GeographyIndented_Desc) %>%
-    unique() %>%
-    mutate(ISO3 = countrycode(SC_GeographyIndented_Desc, "country.name", "iso3c")) %>%
-    filter(!is.na(ISO3))
-  
-  # Remove unnecessary regions
-  countries <- countries[!(grepl("U.S. -", countries$SC_GeographyIndented_Desc) |
-                             grepl("45", countries$SC_Geography_ID) | # Former Soviet Union-12
-                             grepl("128", countries$SC_Geography_ID)),] # Former USSR
-  
-  # Import and export, by annual
-  imex.all <-
-    grains %>%
-    filter(SC_Frequency_Desc == "Annual") %>%
-    filter(SC_Group_Desc == "Exports and imports")
-  
-  # Remove unnecessary fields
-  imex.all <- imex.all[!(grepl("1,000 liters", imex.all$SC_Unit_Desc)),] # alcohol
-  drops <- c("SC_Group_ID", "SC_Group_Desc", "SC_GroupCommod_ID", "SortOrder",
-             "SC_Commodity_ID", "SC_Attribute_ID", "SC_Unit_ID", "SC_Frequency_ID",
-             "Timeperiod_ID", "Timeperiod_Desc")
-  imex.all <- imex.all[, !(names(imex.all) %in% drops)]
-  # Countries in interest
-  imex.all <- filter(imex.all, SC_Geography_ID %in% unlist(countries$SC_Geography_ID))
-  
-  # # Preparing map data
-  # # Deprecated from `leaflet`
-  # world <- map_data("world")
-  # world <- world[world$region != "Antarctica",] # no country is in Antarctica
-  # world$ISO3 <- countrycode(world$region, "country.name", "iso3c")
-  # world$region <- NULL # dont need region
-  # world <-
-  #   right_join(countries, world) %>%
-  #   filter(!is.na(SC_Geography_ID))
   
   # Preparing imex data
   imex.reactive <- reactive({
     data <-
-      imex.all %>%
+      world %>%
       filter(SC_Attribute_Desc == input$imex) %>%
       filter(SC_Commodity_Desc == input$grain) %>%
       filter(Year_ID == input$year)
     
-    # Mutate ISO3
-    data$id <- countrycode(data$SC_GeographyIndented_Desc, "country.name", "iso3c")
-    
-    # # combine world data
-    # # Deprecated from `leaflet`
-    # data <- right_join(world, imex.reactive())
-    # data$subregion <- NULL # dont neet subregion
-    
     return(data)
   })
-  
-  # Load geojson
-  world.geojson <- geojson_read("./json/countries.geo.json", what = "sp")
   
   bins <- c(1, 20, 50, 100, 200, 500, 1000, 2000, Inf)
   
   # Create the map
   output$map <- renderLeaflet({
-    # m <-
-    #   leaflet() %>%
-    #   addTiles(
-    #     urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
-    #     attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
-    #   ) %>%
-    #   setView(lng = -93.85, lat = 37.45, zoom = 4) 
     
     pal <- colorBin("YlOrRd", domain = imex.reactive()$Amount, bins = bins)
     
@@ -102,10 +26,11 @@ my.server <- function(input, output) {
     ) %>% lapply(htmltools::HTML)
     
     m <- 
-      leaflet(world.geojson) %>%
-      setView(-96, 37.8, 4) %>%
+      leaflet(imex.reactive()) %>%
+      # setView(-96, 37.8, 4) %>%
       addProviderTiles("MapBox", options = providerTileOptions(
         id = "mapbox.light",
+        # todo: need to be hidden from final version ###################
         accessToken = 
           'pk.eyJ1IjoiYnJ5b2NvIiwiYSI6ImNpenhzd2sxaDAyZXIzMms3anB2YnBmZnAifQ.yUJFrNDonPhL-W1bHC-WXg')) %>% 
       addPolygons(
@@ -126,7 +51,6 @@ my.server <- function(input, output) {
           style = list("font-weight" = "normal", "padding" = "3px 8px"),
           textsize = "15px",
           direction = "auto")) %>%
-      # add legends
       addLegend(pal = pal, values = ~imex.reactive()$Amount, opacity = 0.7, title = NULL, position = "bottomright")
     
     return(m)
@@ -139,17 +63,17 @@ my.server <- function(input, output) {
       filter(SC_Commodity_Desc == input$grain1) %>%
       filter(Year_ID == input$year1)
     
-    # # combine world data
-    # # Deprecated from `leaflet`
-    # data <- right_join(world, imex.reactive())
-    # data$subregion <- NULL # dont neet subregion
-    
     return(data)
   })
   
   # Create data table
   output$datatable <- DT::renderDataTable({
-    return(datatable.reactive())
+    # Unnecessary fields
+    drops <- c("SC_GroupCommod_Desc", "SC_Frequency_Desc", "SC_Unit_Desc", "Year_ID")
+    data <- datatable.reactive()[, !(names(datatable.reactive()) %in% drops)]
+    colnames(data) <- c("Country", "Commodity", "Import/Export", "Amount")
+    
+    return(data)
   })
   
 }

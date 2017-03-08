@@ -1,22 +1,3 @@
-### Deprecated from app.R
-
-library("dplyr")
-library("ggplot2")
-library("shiny")
-library("shinythemes")
-library("stringr")
-library("maps")
-library("countrycode")
-library("RColorBrewer")
-library("geojsonio")
-library("leaflet")
-library("DT")
-library("htmltools")
-library("jsonlite")
-
-# Load data
-grains <- read.csv("./data/FeedGrains.csv", stringsAsFactors = FALSE, strip.white = TRUE)
-
 # Range of year used in map
 years <- grains %>% 
   filter(SC_Frequency_Desc == "Annual") %>%
@@ -50,7 +31,7 @@ my.ui <- fluidPage(
                                                     selected = "Corn"),
                                         sliderInput("year", "Year", min = year.range[1], max = year.range[2], value = 2016, step = 1),
                                         
-                                        plotOutput("all_year", height = 200) # all year import export
+                                        plotOutput("anything", height = 200) # anything you want to put in
                           ),
                           
                           tags$div(id="cite",
