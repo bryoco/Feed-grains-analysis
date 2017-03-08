@@ -89,6 +89,7 @@ my.server <- function(input, output) {
   market.grains <- 
     filter(grains, SC_Attribute_Desc == 'Prices, market') %>% 
     filter(SC_Frequency_Desc == 'Annual') %>% 
+    filter(SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
     filter(SC_Unit_Desc == 'Dollars per bushel')
   
   # plots market.grains per year.
@@ -162,7 +163,7 @@ my.server <- function(input, output) {
   # Takes total Amount of 4 grains individually per year as a sum of EVERY country. This is to 
   # standardize data (only way i could think of to get equal cols for everything)
   import.countries.spef <- 
-    filter(grains, SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
+    filter(grains, SC_Commodity_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
     filter(SC_Attribute_Desc %in% c("Imports, to U.S. from specified source")) %>% 
     filter(SC_Frequency_Desc == 'Annual') %>% 
     filter(Year_ID < 2016) %>% 
@@ -175,7 +176,7 @@ my.server <- function(input, output) {
   # Takes total Amount of 4 grains individually per year as a sum of EVERY country. This is to 
   # standardize data (only way i could think of to get equal cols for everything)
   export.countries.spef <- 
-    filter(grains, SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
+    filter(grains, SC_Commodity_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
       filter(SC_Attribute_Desc %in% c("Exports, from U.S. to specified destination")) %>% 
         filter(SC_Frequency_Desc == 'Annual') %>% 
          filter(Year_ID < 2016) %>% 
@@ -185,17 +186,7 @@ my.server <- function(input, output) {
                  summarize(Amount = sum(Amount))
   
   ##############################################################################
-  # copy???
-  import.countries.spef <- 
-    filter(grains, SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
-     filter(SC_Attribute_Desc %in% c("Imports, to U.S. from specified source")) %>% 
-       filter(SC_Frequency_Desc == 'Annual') %>% 
-         filter(Year_ID < 2016) %>% 
-          filter(SC_GeographyIndented_Desc == 'China (Mainland)') %>% 
-           filter(!(SC_GroupCommod_Desc == 'Oats' & (Year_ID == 2000 | Year_ID == 2001))) %>% 
-             select(SC_Frequency_Desc, SC_GroupCommod_Desc, SC_Attribute_Desc, SC_GeographyIndented_Desc, Amount, Year_ID) %>% 
-               group_by(SC_GroupCommod_Desc, Year_ID, SC_Attribute_Desc) %>% 
-                 summarize(Amount = sum(Amount))
+  
   
   # DESTROY THESE NEXT 6 LINES. GO TO NEXT HASHTAGS
   farm.market.dif <- prices.grains.market$average.years - farm.price.change$average.years
@@ -222,7 +213,48 @@ my.server <- function(input, output) {
   # For example, shows how export amounts for 2003 change mean farm prices from 2002 to 2003.
   money <- ggplot(data = farm.market, aes(y = market.dif, x = im.dif)) +
     geom_point(aes(color = grains)) +
-    xlim(-100000000, 100000000) + #ex: 100000000
+    xlim(-50000000, 50000000) + #ex: 100000000
+    ylim(-2, 2) +
+    geom_smooth(aes(color = grains))
+  money # Market (high) - farmer (low) : export (high) - import (low) :: High/High = market high, export high. High/Low = e
+  
+  import.countries.spef.china <- 
+    filter(grains, SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
+    filter(SC_Attribute_Desc %in% c("Imports, to U.S. from specified source")) %>% 
+    filter(SC_Frequency_Desc == 'Annual') %>% 
+    filter(Year_ID < 2016) %>% 
+    filter(SC_GeographyIndented_Desc == 'Saudi Arabia') %>% 
+    filter(!(SC_GroupCommod_Desc == 'Oats' & (Year_ID == 2000 | Year_ID == 2001))) %>% 
+    select(SC_Frequency_Desc, SC_GroupCommod_Desc, SC_Attribute_Desc, SC_GeographyIndented_Desc, Amount, Year_ID) %>% 
+    group_by(SC_GroupCommod_Desc, Year_ID, SC_Attribute_Desc) %>% 
+    summarize(Amount = sum(Amount))
+  
+  export.countries.spef.china <- 
+    filter(grains, SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
+    filter(SC_Attribute_Desc %in% c("Exports, from U.S. to specified destination")) %>% 
+    filter(SC_Frequency_Desc == 'Annual') %>% 
+    filter(Year_ID < 2016) %>% 
+    filter(!(SC_GroupCommod_Desc == 'Oats' & (Year_ID == 2000 | Year_ID == 2001))) %>% 
+    select(SC_Frequency_Desc, SC_GroupCommod_Desc, SC_Attribute_Desc, SC_GeographyIndented_Desc, Amount, Year_ID) %>% 
+    group_by(SC_GroupCommod_Desc, Year_ID, SC_Attribute_Desc) %>% 
+    summarize(Amount = sum(Amount))
+  
+  # difference in the average market prices from the current year to the last year.
+  market.dif.china <- prices.grains.market$average.years[!(prices.grains.market$Year_ID == 1989)] - prices.grains.market$average.years[!(prices.grains.market$Year_ID == 2015)]
+  # difference in the average farm prices from the current year to the last year.
+  farm.dif.china <- farm.price.change$average.years[!(farm.price.change$Year_ID == 1989)] - farm.price.change$average.years[!(farm.price.change$Year_ID == 2015)]
+  # difference in the sum export amount from the current year to the last year.
+  ex.dif.china <- export.countries.spef.china$Amount[!(export.countries.spef$Year_ID == 1989)] - export.countries.spef$Amount[!(export.countries.spef$Year_ID == 2015)]
+  # difference in the sum import amount from the current year to the last year.
+  im.dif.china <- import.countries.spef.china$Amount[!(import.countries.spef$Year_ID == 1989)] - import.countries.spef$Amount[!(import.countries.spef$Year_ID == 2015)]
+  # data frames results
+  farm.market.china <- data.frame(market.dif, ex.dif, grains = export.countries.spef$SC_GroupCommod_Desc[!(export.countries.spef$Year_ID == 1989)])
+  
+  # Graphs a planar plot of above data. Will use either import or export data and compare that against either farm or market data.
+  # For example, shows how export amounts for 2003 change mean farm prices from 2002 to 2003.
+  money <- ggplot(data = farm.market, aes(y = market.dif, x = im.dif.china)) +
+    geom_point(aes(color = grains)) +
+    xlim(-1000000000000, 1000000000000) + #ex: 100000000
     ylim(-2, 2) +
     geom_smooth(aes(color = grains))
   money # Market (high) - farmer (low) : export (high) - import (low) :: High/High = market high, export high. High/Low = e
