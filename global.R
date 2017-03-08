@@ -94,4 +94,4 @@ ggplot(china.imex.oats.imp, aes(Year_ID)) +
   geom_line(aes(y = china.imex.barley.exp$Amount, colour = "China Barley Exports")) + 
   geom_line(aes(y = china.imex.oats.imp$Amount, colour = "China Oats Imports")) + 
   geom_line(aes(y = china.imex.oats.exp$Amount, colour = "China Oats Exports")) 
->>>>>>> refs/remotes/origin/interactive_map2
+
