@@ -1,7 +1,6 @@
 library("dplyr")
 library("ggplot2")
 library("shiny")
-library("shinythemes")
 library("stringr")
 library("maps")
 library("countrycode")
@@ -12,7 +11,7 @@ library("htmltools")
 library("jsonlite")
 library("data.table")
 library("rworldmap")
-library("rworldxtra")
+# library("rworldxtra")
 
 # Load data
 grains <- fread("./data/FeedGrains.csv", stringsAsFactors = FALSE, strip.white = TRUE)
