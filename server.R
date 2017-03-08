@@ -1,5 +1,5 @@
 # Map data
-world <- getMap("high")
+world <- getMap()
 
 my.server <- function(input, output) {
   
@@ -63,10 +63,12 @@ my.server <- function(input, output) {
   
   datatable.reactive <- reactive({
     data <-
-      imex.all %>%
+      imex %>%
       filter(SC_Attribute_Desc == input$imex1) %>%
       filter(SC_Commodity_Desc == input$grain1) %>%
       filter(Year_ID == input$year1)
+    
+    data$ISO3 <- NULL
     
     return(data)
   })
@@ -76,7 +78,7 @@ my.server <- function(input, output) {
     # Unnecessary fields
     drops <- c("SC_GroupCommod_Desc", "SC_Frequency_Desc", "SC_Unit_Desc", "Year_ID")
     data <- datatable.reactive()[, !(names(datatable.reactive()) %in% drops)]
-    colnames(data) <- c("Country", "Commodity", "Import/Export", "Amount")
+    colnames(data) <- c("Country", "Commodity", "Import/Export", "Amount (1000 metric tons)")
     
     return(data)
   })
