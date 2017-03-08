@@ -1,5 +1,5 @@
 # Map data
-world <- getMap()
+world <- getMap("high")
 
 my.server <- function(input, output) {
   
