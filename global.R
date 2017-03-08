@@ -1,3 +1,5 @@
+#### Dependencies and data ####
+
 library("dplyr")
 library("ggplot2")
 library("shiny")
@@ -11,12 +13,11 @@ library("htmltools")
 library("jsonlite")
 library("data.table")
 library("rworldmap")
-# library("rworldxtra")
 
 # Load data
 grains <- fread("./data/FeedGrains.csv", stringsAsFactors = FALSE, strip.white = TRUE)
 
-### Pre-processing map data ###
+#### Pre-processing map data ####
 
 # Countries in interest
 countries <-
@@ -48,3 +49,19 @@ imex <- filter(imex, SC_GeographyIndented_Desc %in% unlist(countries$SC_Geograph
 
 # Mutate ISO3 for `imex`
 imex <- mutate(imex, ISO3 = countrycode(SC_GeographyIndented_Desc, "country.name", "iso3c"))
+
+#### Plot data ####
+
+# Market price of grains per year.
+market.grains <- 
+  filter(grains, SC_Attribute_Desc == 'Prices, market') %>% 
+  filter(SC_Frequency_Desc == 'Annual') %>% 
+  filter(SC_Unit_Desc == 'Dollars per bushel')
+
+# Plots market.grains per year.
+p.market.price <- 
+  ggplot(data = market.grains) +
+  geom_point(mapping = aes(x = Year_ID, y = Amount, color = SC_GroupCommod_Desc)) +
+  labs(x = "Year", y = "Price (Dollars per bushel)", title = "Change in Feed Prices") +
+  scale_color_discrete(name  = "Product") +
+  geom_smooth(mapping = aes(x = Year_ID, y = Amount, color = SC_GroupCommod_Desc))

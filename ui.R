@@ -1,9 +1,3 @@
-# Range of year used in map
-years <- grains %>% 
-  filter(SC_Frequency_Desc == "Annual") %>%
-  filter(SC_Group_Desc == "Exports and imports")
-year.range <- range(years$Year_ID)
-
 my.ui <- fluidPage(
   navbarPage("Grain", id = "nav",
              
@@ -20,7 +14,7 @@ my.ui <- fluidPage(
                           
                           # Shiny versions prior to 0.11 should use class="modal" instead.
                           absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                                        draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
+                                        draggable = TRUE, top = 60, right = "auto", left = 20, bottom = "auto",
                                         width = 330, height = "auto",
                                         
                                         h2("Data explorer"),
@@ -29,9 +23,9 @@ my.ui <- fluidPage(
                                                                                "Exports, from U.S. to specified destination")),
                                         selectInput("grain", "Grain type", c("Barley", "Corn", "Oats", "Sorghum"),
                                                     selected = "Corn"),
-                                        sliderInput("year", "Year", min = year.range[1], max = year.range[2], value = 2016, step = 1),
+                                        sliderInput("year", "Year", min = 1989, max = 2016, value = 1989, step = 1),
                                         
-                                        plotOutput("anything", height = 200) # anything you want to put in
+                                        plotOutput("market.price", height = 200) # anything you want to put in
                           ),
                           
                           tags$div(id="cite",
@@ -45,9 +39,21 @@ my.ui <- fluidPage(
                                                               "Exports, from U.S. to specified destination")),
                       selectInput("grain1", "Grain type", c("Barley", "Corn", "Oats", "Sorghum"),
                                   selected = "Corn"),
-                      sliderInput("year1", "Year", min = year.range[1], max = year.range[2], value = 2016, step = 1),
+                      sliderInput("year1", "Year", min = 1989, max = 2016, value = 2016, step = 1),
                       DT::dataTableOutput("datatable")
-             )
+             ),
+             
+             tabPanel("Plot 1",
+                      selectInput('place', label = 'US City', 
+                                  choices = unique(market.grains$SC_GeographyIndented_Desc, 
+                                                   selected = "U.S. - Memphis, TN")),
+                      plotOutput("plot1")),
+             
+             tabPanel("Plot 3", 
+                      plotOutput("plot3")),
+             
+             tabPanel("Plot 6",
+                      plotOutput("plot6"))
   )
 )
 

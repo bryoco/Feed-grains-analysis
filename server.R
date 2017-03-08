@@ -1,3 +1,5 @@
+### Merge plot 1/3/6
+
 # Map data
 world <- getMap()
 
@@ -16,11 +18,9 @@ my.server <- function(input, output) {
     return(data)
   })
   
-  
-  
   bins <- c(0, 1, 10, 50, 200, 500, 1000, 2000, Inf)
   
-  # Create the map
+  ### Map
   output$map <- renderLeaflet({
     
     pal <- colorBin("YlOrRd", domain = imex.reactive()$Amount, bins = bins)
@@ -61,6 +61,12 @@ my.server <- function(input, output) {
     return(m)
   })
   
+  output$market.price <- renderPlot({
+    return(market.price.reactive())
+  })
+  
+  
+  ### dataTable
   datatable.reactive <- reactive({
     data <-
       imex %>%
@@ -73,7 +79,6 @@ my.server <- function(input, output) {
     return(data)
   })
   
-  # Create data table
   output$datatable <- DT::renderDataTable({
     # Unnecessary fields
     drops <- c("SC_GroupCommod_Desc", "SC_Frequency_Desc", "SC_Unit_Desc", "Year_ID")
@@ -81,6 +86,64 @@ my.server <- function(input, output) {
     colnames(data) <- c("Country", "Commodity", "Import/Export", "Amount (1000 metric tons)")
     
     return(data)
+  })
+  
+  market.price.reactive <- reactive({
+    return(p.market.price + geom_vline(xintercept = input$year))
+  })
+  
+  ### Plot 1
+  which.city <- reactive({
+    filter(market.grains, input$place == SC_GeographyIndented_Desc)
+  })
+  
+  output$plot1 <- renderPlot({
+    city <- 
+      ggplot(data = which.city()) +
+      geom_point(mapping = aes(x = Year_ID, y = Amount, color = SC_GroupCommod_Desc)) +
+      labs(x = "Year", y = "Price (Respective Scales of Product)", title = "Change in Feed Prices") +
+      geom_smooth(mapping = aes(x = Year_ID, y = Amount, color = SC_GroupCommod_Desc)) +
+      scale_color_discrete(name  = "Product")
+    
+    return(city)
+  })
+  
+  ### Plot 3
+  farm.price.change <- 
+    filter(grains, SC_Group_Desc == "Prices") %>%
+    filter(SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
+    filter(SC_GeographyIndented_Desc == 'United States') 
+  
+  output$plot3 <- renderPlot({
+    prices.farmers <- 
+      ggplot(data = farm.price.change) +
+      geom_point(mapping = aes(x = Year_ID, y = Amount, color = SC_Attribute_Desc)) +
+      facet_wrap(~SC_GroupCommod_Desc) +
+      labs(x = "Year", y = "Price (Respective Scales of Product)", title = "Change in Farmer Compensation") +
+      scale_color_discrete(name  = "Product") +
+      ylim(0, 13) +
+      geom_smooth(mapping = aes(x = Year_ID, y = Amount, color = SC_Attribute_Desc), color = "blue")
+    
+    return(prices.farmers)
+  })
+  
+  ### Plot 6
+  import.countries <- 
+    filter(grains, SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
+    filter(SC_Attribute_Desc %in% c("Imports, to U.S. from specified source", "Exports, from U.S. to specified destination")) %>% 
+    filter(SC_Frequency_Desc == 'Annual') %>% 
+    select(SC_Frequency_Desc, SC_GroupCommod_Desc, SC_Attribute_Desc, SC_GeographyIndented_Desc, Amount, Year_ID) %>% 
+    group_by(SC_GroupCommod_Desc, Year_ID, SC_Attribute_Desc) %>% 
+    summarize(Amount = sum(Amount))
+  
+  output$plot6 <- renderPlot({
+    country.port <- 
+      ggplot(data = import.countries) +
+      geom_point(mapping = aes(x = Year_ID, y = Amount, color = SC_GroupCommod_Desc)) +
+      geom_smooth(mapping = aes(x = Year_ID, y = Amount, color = SC_GroupCommod_Desc)) +
+      facet_wrap(~SC_Attribute_Desc)
+    
+    return(country.port)
   })
   
 }
