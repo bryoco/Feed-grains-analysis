@@ -1,19 +1,24 @@
-world <- read.csv("./data/map_data.csv", stringsAsFactors = FALSE)
+# Map data
+world <- getMap()
 
 my.server <- function(input, output) {
   
   # Preparing imex data
   imex.reactive <- reactive({
     data <-
-      world %>%
+      imex %>%
       filter(SC_Attribute_Desc == input$imex) %>%
       filter(SC_Commodity_Desc == input$grain) %>%
       filter(Year_ID == input$year)
     
+    data <- merge(world, data, by.x = "ISO3", by.y = "ISO3")
+    
     return(data)
   })
   
-  bins <- c(1, 20, 50, 100, 200, 500, 1000, 2000, Inf)
+  
+  
+  bins <- c(0, 1, 10, 50, 200, 500, 1000, 2000, Inf)
   
   # Create the map
   output$map <- renderLeaflet({

@@ -11,9 +11,10 @@ library("leaflet")
 library("DT")
 library("htmltools")
 library("jsonlite")
+library("data.table")
 
 # Load data
-grains <- read.csv("./data/FeedGrains.csv", stringsAsFactors = FALSE, strip.white = TRUE)
+grains <- fread("./data/FeedGrains.csv", stringsAsFactors = FALSE, strip.white = TRUE)
 
 ### Pre-processing map data ###
 
@@ -27,34 +28,23 @@ countries <-
 
 # Remove unnecessary regions
 countries <- countries[!(grepl("U.S. -", countries$SC_GeographyIndented_Desc) |
-                           grepl("45", countries$SC_Geography_ID) | # Former Soviet Union-12
-                           grepl("128", countries$SC_Geography_ID)),] # Former USSR
+                           grepl("Former Soviet Union-12", countries$SC_GeographyIndented_Desc) |
+                           grepl("Former Ussr, Begins 1/1989 & Ends 1/1993", countries$SC_GeographyIndented_Desc)),]
 
 # Import and export, by annual
-imex.all <-
+imex <-
   grains %>%
   filter(SC_Frequency_Desc == "Annual") %>%
   filter(SC_Group_Desc == "Exports and imports")
 
 # Remove unnecessary fields
-imex.all <- imex.all[!(grepl("1,000 liters", imex.all$SC_Unit_Desc)),] # alcohol
-drops <- c("SC_Group_ID", "SC_Group_Desc", "SC_GroupCommod_ID","SC_GroupCommod_Desc",
-           "SortOrder", "SC_Commodity_ID", "SC_Attribute_ID", "SC_Unit_ID", "SC_Frequency_ID",
+imex <- imex[!(grepl("1,000 liters", imex$SC_Unit_Desc)),] # alcohol
+drops <- c("SC_Group_ID", "SC_Group_Desc", "SC_GroupCommod_ID","SC_GroupCommod_Desc", "SC_Geography_ID",
+           "SortOrder", "SC_Commodity_ID", "SC_Attribute_ID", "SC_Unit_ID", "SC_Frequency_ID", "SC_Frequency_Desc",
            "Timeperiod_ID", "Timeperiod_Desc")
-imex.all <- imex.all[, !(names(imex.all) %in% drops)]
+imex <- imex[, !(names(imex) %in% drops)]
 # Using only countries in interest
-imex.all <- filter(imex.all, SC_Geography_ID %in% unlist(countries$SC_Geography_ID))
-# Mutate ISO3 for `imex.all`
-imex.all <- mutate(imex.all, ISO3 = countrycode(SC_GeographyIndented_Desc, "country.name", "iso3c"))
+imex <- filter(imex, SC_GeographyIndented_Desc %in% unlist(countries$SC_GeographyIndented_Desc))
 
-
-# Prepare map data
-world <- map_data("world")
-world$ISO3 <- countrycode(world$region, "country.name", "iso3c")
-world$region <- NULL
-world$subregion <- NULL
-world <-
-  right_join(imex.all, world) %>%
-  filter(!is.na(SC_Geography_ID))
-
-write.csv(world, "~/map_data.csv")
+# Mutate ISO3 for `imex`
+imex <- mutate(imex, ISO3 = countrycode(SC_GeographyIndented_Desc, "country.name", "iso3c"))
