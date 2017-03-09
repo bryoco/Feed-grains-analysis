@@ -347,7 +347,49 @@ my.server <- function(input, output) {
                                            
                                            "<br/><br/>"))
   })
-}
 
+major.countries <- filter(imex, ISO3 %in% c("CHN","MEX", "BRA","CAN","JPN")) %>%
+  filter(SC_Attribute_Desc %in% "Imports, to U.S. from specified source")%>%
+  filter(SC_Commodity_Desc %in% "Corn")
+major.countries = ddply(major.countries, .(Year_ID), transform, percent = Amount/sum(Amount) * 100)
+major.countries = ddply(major.countries, .(Year_ID), transform, pos = (cumsum(Amount) - 0.5 * Amount))
+major.countries$label = paste0(sprintf("%.0f", major.countries$percent), "%")
+
+major.export.countries <- filter(imex, ISO3 %in% c("CHN","MEX", "BRA","CAN","JPN")) %>%
+  filter(SC_Attribute_Desc %in% "Exports, from U.S. to specified destination")%>%
+  filter(SC_Commodity_Desc %in% "Corn")
+major.export.countries = ddply(major.export.countries, .(Year_ID), transform, percent = Amount/sum(Amount) * 100)
+major.export.countries = ddply(major.export.countries, .(Year_ID), transform, pos = (cumsum(Amount) - 0.5 * Amount))
+major.export.countries$label = paste0(sprintf("%.0f", major.export.countries$percent), "%")
+
+output$bar.chart1 <- renderPlot({
+  countries.percentage <-
+    ggplot(major.countries, aes(x = factor(Year_ID), y = Amount, fill = ISO3)) +
+    geom_bar(position = position_stack(), stat = "identity", width = .7) +
+    geom_text(aes(label = label), position = position_stack(vjust = 0.5), size = 2) +
+    labs(x = "Year", y = "Amount", title = "Import amount for corns in major countries to U.S.")+
+    coord_flip()
+  
+  return(countries.percentage)
+})
+
+output$bar.chart2 <- renderPlot({
+  countries.export.percentage <-
+    ggplot(major.export.countries, aes(x = factor(Year_ID), y = Amount, fill = ISO3)) +
+    geom_bar(position = position_stack(), stat = "identity", width = .7) +
+    geom_text(aes(label = label), position = position_stack(vjust = 0.5), size = 2) +
+    labs(x = "Year", y = "Amount", title = "Export amount for corns in major countries to U.S.")+
+    coord_flip()
+  
+  return(countries.export.percentage)
+})
+
+output$text.import.export <- renderUI({HTML(paste('From this two graphs, we could see how import and export for corns from US to these major countries',
+                                                  'We can see that US corns import is increasing, and America have more cooperation with Mexico and Brazil insteat of Canada. U.S has more chooice.',
+                                                  'And from the export gragh for conrs, we can see that there is not obviously increasing for corns export, but it shows that the percentage of Mexicos is increasing.',
+                                                  'the old major export country JAPAN is sharing less and less percentage.',
+                                                  sep='<br/><br/>'))
+})
+}
 # Create server
 shinyServer(my.server)

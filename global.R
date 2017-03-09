@@ -13,7 +13,7 @@ library("htmltools")
 library("jsonlite")
 library("data.table")
 library("rworldmap")
-library('mgcv')
+library('plyr')
 
 # Load data
 grains <- fread("./data/FeedGrains.csv", stringsAsFactors = FALSE, strip.white = TRUE)

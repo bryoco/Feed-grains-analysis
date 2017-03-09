@@ -45,7 +45,7 @@ my.ui <- fluidPage(
              
              tabPanel("Market Price in the US", 
                       selectInput('place', label = 'US City', 
-                                choices = c(unique(grains$SC_GeographyIndented_Desc[grains$SC_Attribute_Desc == 'Prices, market']), "All Cities"),
+                                choices = c(unique(grains$SC_GeographyIndented_Desc[grains$SC_Attribute_Desc == 'Prices, market' & grains$SC_GeographyIndented_Desc != "U.S. - Chicago, IL" & grains$SC_GeographyIndented_Desc != "U.S. - Kansas City, MO" & grains$SC_GeographyIndented_Desc != "U.S. - Midwest"]), "All Cities"),
                                 selected = "All Cities"),
                       plotOutput('plot.market.price'), htmlOutput('text.market.price')),
              
@@ -58,8 +58,10 @@ my.ui <- fluidPage(
                       plotOutput('plot.japan.market'), htmlOutput("text.japan.1"),
                       plotOutput('plot.canada.farm'), htmlOutput("text.canada.2"),
                       plotOutput('plot.france.farm'), htmlOutput("text.france.2"),
-                      plotOutput('plot.japan.farm'), htmlOutput("text.japan.2")
-)))
+                      plotOutput('plot.japan.farm'), htmlOutput("text.japan.2")),
+            
+              tabPanel("Bar Chart Visualization", plotOutput('bar.chart1'), plotOutput('bar.chart2'), htmlOutput('text.import.export'))
+))
 
 # Create UI
 shinyUI(my.ui)
