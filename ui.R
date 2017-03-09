@@ -51,7 +51,7 @@ my.ui <- fluidPage(
              
              tabPanel("Prices Received by Farmers in the US", plotOutput('plot.farm.price'), htmlOutput('text.farm.price')),
              
-             tabPanel("Import and Export Data Relative to the US", plotOutput('plot.imex'), htmlOutput('text.imex')),
+             # tabPanel("Import and Export Data Relative to the US", plotOutput('plot.imex'), htmlOutput('text.imex')),
              
              tabPanel("US Imports and Exports in Relation to Market and Farm Price", plotOutput('plot.canada.market'), htmlOutput("text.canada.1"), 
                       plotOutput('plot.france.market'), htmlOutput("text.france.1"),
