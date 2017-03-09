@@ -133,7 +133,7 @@ my.server <- function(input, output) {
   output$plot.farm.price <- renderPlot({
     prices.farmers <- 
       ggplot(data = farm.price.change) +
-      geom_point(mapping = aes(x = Year_ID, y = Amount)) +
+      geom_point(mapping = aes(x = Year_ID, y = Amount), color = 'red') +
       facet_wrap(~SC_GroupCommod_Desc) +
       labs(x = "Year", y = "Price received by Farmer (dollars per bushel)", title = "Change in Farmer Compensation") +
       scale_color_discrete(name  = "Product") +
