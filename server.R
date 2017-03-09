@@ -26,8 +26,8 @@ my.server <- function(input, output) {
     pal <- colorBin("YlOrRd", domain = imex.reactive()$Amount, bins = bins)
     
     labels <- sprintf(
-      "<strong>%s</strong><br/>%g metric tons",
-      imex.reactive()$SC_GeographyIndented_Desc, (imex.reactive()$Amount * 1000)
+      "<strong>%s</strong><br/>%g (1000 metric tons)",
+      imex.reactive()$SC_GeographyIndented_Desc, imex.reactive()$Amount
     ) %>% lapply(htmltools::HTML)
     
     m <- 

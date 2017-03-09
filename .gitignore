@@ -2,8 +2,8 @@
 .Rhistory
 .Rapp.history
 
-# Scartch work
-# scartch.R
+# Shiny config files
+/rsconnect
 
 # Session Data files
 .RData
