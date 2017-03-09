@@ -59,7 +59,7 @@ my.server <- function(input, output) {
     filter(SC_Frequency_Desc == 'Annual') %>% 
     select(SC_Frequency_Desc, SC_GroupCommod_Desc, SC_Attribute_Desc, SC_GeographyIndented_Desc, Amount, Year_ID) %>% 
     group_by(SC_GroupCommod_Desc, Year_ID, SC_Attribute_Desc) %>% 
-    summarize(Amount = sum(Amount))
+    summarise(Amount = sum(Amount))
   
   output$plot6 <- renderPlot({
     country.port <- 
@@ -70,13 +70,6 @@ my.server <- function(input, output) {
     
     return(country.port)
   })
-  
-  import.sums <- 
-    filter(grains, SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
-    filter(SC_Attribute_Desc %in% c("Imports, to U.S. from specified source", "Exports, from U.S. to specified destination")) %>% 
-    filter(SC_Frequency_Desc == 'Annual') %>% 
-    group_by(SC_GroupCommod_Desc, SC_Attribute_Desc) %>% 
-    summarize(sum = sum(Amount))
   
   
   # MAPS #
