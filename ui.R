@@ -1,5 +1,5 @@
 my.ui <- fluidPage(
-  navbarPage("Grain", id = "nav",
+  navbarPage("US Feed Grain Data: Imports, Exports, and Fluxuating Prices", id = "nav",
              
              tabPanel("Interactive map",
                       div(class="outer",
@@ -23,9 +23,9 @@ my.ui <- fluidPage(
                                                                                "Exports, from U.S. to specified destination")),
                                         selectInput("grain", "Grain type", c("Barley", "Corn", "Oats", "Sorghum"),
                                                     selected = "Corn"),
-                                        sliderInput("year", "Year", min = 1989, max = 2016, value = 1989, step = 1),
+                                        sliderInput("year", "Year", min = 1989, max = 2016, value = 1989, step = 1)
                                         
-                                        plotOutput("market.price", height = 200) # anything you want to put in
+                                        #plotOutput("market.price", height = 200) # anything you want to put in
                           ),
                           
                           tags$div(id="cite",
@@ -43,17 +43,27 @@ my.ui <- fluidPage(
                       DT::dataTableOutput("datatable")
              ),
              
-             tabPanel("Plot 1",
+             tabPanel("Market Price in the US", 
                       selectInput('place', label = 'US City', 
-                                  choices = unique(market.grains$SC_GeographyIndented_Desc, 
-                                                   selected = "U.S. - Memphis, TN")),
-                      plotOutput("plot1")),
+                                choices = c(unique(grains$SC_GeographyIndented_Desc[grains$SC_Attribute_Desc == 'Prices, market']), "All Cities"),
+                                selected = "All Cities"),
+                      plotOutput('plot.market.price'), htmlOutput('text.market.price')),
              
-             tabPanel("Plot 3", 
-                      plotOutput("plot3")),
+             tabPanel("Prices Received by Farmers in the US", plotOutput('plot.farm.price'), htmlOutput('text.farm.price')),
              
-             tabPanel("Plot 6",
-                      plotOutput("plot6"))
+             tabPanel("Import and Export Data Relative to the US", plotOutput('plot.imex'), htmlOutput('text.imex')),
+             
+             tabPanel("US Imports: Market Price - Canada", plotOutput('plot.canada.market'), htmlOutput("text.canada.1")),
+             
+             tabPanel("US Imports: Market Price - France", plotOutput('plot.france.market'), htmlOutput("text.france.1")),
+             
+             tabPanel("US Exports: Market Price - Japan", plotOutput('plot.japan.market'), htmlOutput("text.japan.1")),
+             
+             tabPanel("US Imports: Farm Price - Canada", plotOutput('plot.canada.farm'), htmlOutput("text.canada.2")),
+             
+             tabPanel("US Imports: Farm Price - France", plotOutput('plot.france.farm'), htmlOutput("text.france.2")),
+             
+             tabPanel("US Exports: Farm Price - Japan", plotOutput('plot.japan.farm'), htmlOutput("text.japan.2"))
   )
 )
 
