@@ -212,10 +212,92 @@ my.server <- function(input, output) {
     filter(SC_GeographyIndented_Desc == country) %>% 
     filter(Year_ID < 2016) 
     
-    b <- aggregate(a$Amount, by=list(a$Year_ID), FUN=sum)
+    iii <- aggregate(a$Amount, by=list(a$Year_ID), FUN=sum)
+    # difference in the average market prices from the current year to the last year.
+    market.dif.china <- ccc[[2]][!(ccc[[1]] == 1989)] - ccc[[2]][!(ccc[[1]] == 2015)]
+    # difference in the sum import amount from the current year to the last year.
+    im.dif.china <- iii[[2]][!(iii[[1]] == 1989)] - iii[[2]][!(iii[[1]] == 2015)]
+    
+    farm.market.china <- data.frame(market.dif.china, im.dif.china)
+    
+    money <- ggplot(data = farm.market.china, aes(y = market.dif.china, x = im.dif.china)) +
+      geom_point() +
+      geom_smooth()
+    money
   }
-  iii <- import.countries.spef.china('Colombia')
+  import.countries.spef.china('Canada')
+  import.countries.spef.china('France')
   
+  export.countries.spef.china <- function(country) {
+    a <- filter(grains, SC_Commodity_Desc == "Corn") %>% 
+      filter(SC_Attribute_Desc == "Exports, from U.S. to specified destination") %>% 
+      filter(SC_Frequency_Desc == 'Annual') %>% 
+      filter(SC_GeographyIndented_Desc == country) %>% 
+      filter(Year_ID < 2016) 
+    
+    iii <- aggregate(a$Amount, by=list(a$Year_ID), FUN=sum)
+    # difference in the average market prices from the current year to the last year.
+    market.dif.china <- ccc[[2]][!(ccc[[1]] == 1989)] - ccc[[2]][!(ccc[[1]] == 2015)]
+    # difference in the sum import amount from the current year to the last year.
+    ex.dif.china <- iii[[2]][!(iii[[1]] == 1989)] - iii[[2]][!(iii[[1]] == 2015)]
+    
+    farm.market.china <- data.frame(market.dif.china, ex.dif.china)
+    
+    money <- ggplot(data = farm.market.china, aes(y = market.dif.china, x = ex.dif.china)) +
+      geom_point() +
+      geom_smooth()
+    money
+  }
+  
+  export.countries.spef.china("Japan")
+  
+  import.countries.spef.farm <- function(country) {
+    a <- filter(grains, SC_Commodity_Desc == "Corn") %>% 
+      filter(SC_Attribute_Desc == "Imports, to U.S. from specified source") %>% 
+      filter(SC_Frequency_Desc == 'Annual') %>% 
+      filter(SC_GeographyIndented_Desc == country) %>% 
+      filter(Year_ID < 2016) 
+    
+    iii <- aggregate(a$Amount, by=list(a$Year_ID), FUN=sum)
+    # difference in the average market prices from the current year to the last year.
+    farm.dif.china <- ppp[[2]][!(ppp[[1]] == 1989)] - ppp[[2]][!(ppp[[1]] == 2015)]
+    # difference in the sum import amount from the current year to the last year.
+    ex.dif.china <- iii[[2]][!(iii[[1]] == 1989)] - iii[[2]][!(iii[[1]] == 2015)]
+    
+    farm.market.china <- data.frame(market.dif.china, ex.dif.china)
+    
+    money <- ggplot(data = farm.market.china, aes(y = market.dif.china, x = ex.dif.china)) +
+      geom_point() +
+      geom_smooth()
+    money
+  }
+  
+  import.countries.spef.farm('Canada')
+  import.countries.spef.farm('France')
+  
+  
+  export.countries.spef.farm <- function(country) {
+    a <- filter(grains, SC_Commodity_Desc == "Corn") %>% 
+      filter(SC_Attribute_Desc == "Exports, from U.S. to specified destination") %>% 
+      filter(SC_Frequency_Desc == 'Annual') %>% 
+      filter(SC_GeographyIndented_Desc == country) %>% 
+      filter(Year_ID < 2016) 
+    
+    iii <- aggregate(a$Amount, by=list(a$Year_ID), FUN=sum)
+    # difference in the average market prices from the current year to the last year.
+    farm.dif.china <- ppp[[2]][!(ppp[[1]] == 1989)] - ppp[[2]][!(ppp[[1]] == 2015)]
+    # difference in the sum import amount from the current year to the last year.
+    ex.dif.china <- iii[[2]][!(iii[[1]] == 1989)] - iii[[2]][!(iii[[1]] == 2015)]
+    
+    farm.market.china <- data.frame(market.dif.china, ex.dif.china)
+    
+    money <- ggplot(data = farm.market.china, aes(y = market.dif.china, x = ex.dif.china)) +
+      geom_point() +
+      geom_smooth()
+    money
+  }
+  
+  export.countries.spef.farm('Japan')
   
   prices.grains.market <- 
     filter(grains, SC_Attribute_Desc %in% c('Prices, market')) %>%
@@ -223,7 +305,15 @@ my.server <- function(input, output) {
     filter(SC_GroupCommod_Desc == 'Corn') %>%
     filter(Year_ID > 1988)
   
-   ccc <-  aggregate(prices.grains.market$Amount, by=list(prices.grains.market$Year_ID), FUN=mean) 
+  ccc <-  aggregate(prices.grains.market$Amount, by=list(prices.grains.market$Year_ID), FUN=mean) 
+  
+  prices.grains.farms <- 
+    filter(grains, SC_Attribute_Desc %in% c('Prices received by farmers')) %>%
+    filter(SC_Frequency_Desc == 'Annual') %>% 
+    filter(SC_GroupCommod_Desc == 'Corn') %>%
+    filter(Year_ID > 1988)
+  
+  ppp <-  aggregate(prices.grains.farms$Amount, by=list(prices.grains.farms$Year_ID), FUN=mean) 
   
   # difference in the average market prices from the current year to the last year.
   market.dif.china <- ccc[[2]][!(ccc[[1]] == 1989)] - ccc[[2]][!(ccc[[1]] == 2015)]
