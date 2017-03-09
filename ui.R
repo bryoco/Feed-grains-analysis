@@ -53,19 +53,13 @@ my.ui <- fluidPage(
              
              tabPanel("Import and Export Data Relative to the US", plotOutput('plot.imex'), htmlOutput('text.imex')),
              
-             tabPanel("US Imports: Market Price - Canada", plotOutput('plot.canada.market'), htmlOutput("text.canada.1")),
-             
-             tabPanel("US Imports: Market Price - France", plotOutput('plot.france.market'), htmlOutput("text.france.1")),
-             
-             tabPanel("US Exports: Market Price - Japan", plotOutput('plot.japan.market'), htmlOutput("text.japan.1")),
-             
-             tabPanel("US Imports: Farm Price - Canada", plotOutput('plot.canada.farm'), htmlOutput("text.canada.2")),
-             
-             tabPanel("US Imports: Farm Price - France", plotOutput('plot.france.farm'), htmlOutput("text.france.2")),
-             
-             tabPanel("US Exports: Farm Price - Japan", plotOutput('plot.japan.farm'), htmlOutput("text.japan.2"))
-  )
-)
+             tabPanel("US Imports and Exports in Relation to Market and Farm Price", plotOutput('plot.canada.market'), htmlOutput("text.canada.1"), 
+                      plotOutput('plot.france.market'), htmlOutput("text.france.1"),
+                      plotOutput('plot.japan.market'), htmlOutput("text.japan.1"),
+                      plotOutput('plot.canada.farm'), htmlOutput("text.canada.2"),
+                      plotOutput('plot.france.farm'), htmlOutput("text.france.2"),
+                      plotOutput('plot.japan.farm'), htmlOutput("text.japan.2")
+)))
 
 # Create UI
 shinyUI(my.ui)

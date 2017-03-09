@@ -132,13 +132,11 @@ my.server <- function(input, output) {
   
   output$plot.farm.price <- renderPlot({
     prices.farmers <- 
-      ggplot(data = farm.price.change) +
-      geom_point(mapping = aes(x = Year_ID, y = Amount), color = 'red') +
+      ggplot(data = farm.price.change,aes(x = Year_ID, y = Amount)) +
+      geom_point(color = 'red') +
       facet_wrap(~SC_GroupCommod_Desc) +
       labs(x = "Year", y = "Price received by Farmer (dollars per bushel)", title = "Change in Farmer Compensation") +
-      scale_color_discrete(name  = "Product") +
-      ylim(0, 13) +
-      geom_smooth(mapping = aes(x = Year_ID, y = Amount), color = "blue")
+      scale_color_discrete(name  = "Product")
     
     return(prices.farmers)
   })
@@ -169,8 +167,11 @@ my.server <- function(input, output) {
     return(country.port)
   })
   
-  output$text.imex <- renderUI({HTML(paste('This graph looks at changes in how much farmers are paid for barley, corn, oats, and sorghum from the 1860s to present day.', 
-                                           'Once again, the prices farmers receive for barley and corn are extremely similar, in terms of nominal amount and trends; the best fit lines on the graphs look almost identical. Oats and sorghum both change in a similar direction to barley and corn, but are different in terms of volatility. Sorghum follows the same trends of increase and decrease that barley and corn do, but is much more volatile. Essentially, sorghum prices increase more than corn prices when they are increasing, but it also decreases more than corn prices when both are decreasing. Oats is on the opposite end of the spectrum, where the trends are similar to that of corn, but it is much less volatile than corn prices. In other words, when corn prices increase, oats prices increase a smaller amount, and when corn prices decrease, oats prices decrease a smaller amount. In essence, oats prices are more stable and less prone to fluctuations.',
+  output$text.imex <- renderUI({HTML(paste('This graph looks at exports and imports of barley, corn, oats, and sorghum from between the US and the rest of the world. Given that the US is the world leader in corn production, it makes sense that we export much more corn compared to the other types of grain.', 
+                                           
+                                           'First looking at barley, oats, and sorghum, the trends between exports and imports are opposite. In essence, we export more sorghum than barley, and more barley than oats. On the other hand, we import more oats than barley, and more barley than sorghum. So typically, the more we export of a good, the less we import. This makes sense because we export surpluses of goods after supplying domestic industries. Additionally, while the trends between oats and sorghum are closely correlated, barley seems to be independent of the other two in terms of overall imports and exports.',
+                                           
+                                           'Now in regards to corn, US corn production has been rapidly increasing from 1990 until around 2008, for a couple reasons. First, there was a rapid increase in demand for corn ethanol, driving up the prices and subsequently increasing incentive for exporting corn. At around 2008, corn exports start to decrease, corresponding to the 2008 market crash. The market crash had implications throughout the whole economy, causing almost every sector to shrink. Unsurprisingly, corn exports followed a similar trend and we haven’t recovered yet. The US doesn’t import much corn because we produce so much, but at certain prices and in order to help certain countries, we often do import some corn. Again, corn imports started decreasing at around 2008 and once again, we still have not recovered fully.',
                                            sep='<br/><br/>'))
   })
   
