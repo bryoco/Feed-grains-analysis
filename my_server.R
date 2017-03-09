@@ -22,7 +22,7 @@ my.server <- function(input, output) {
     }
   })
   
-  output$plot.farm.price <- renderPlot({
+  output$plot.market.price <- renderPlot({
     city <- 
       ggplot(data = which.city()) +
       geom_point(mapping = aes(x = Year_ID, y = Amount, color = SC_GroupCommod_Desc)) +
@@ -32,6 +32,14 @@ my.server <- function(input, output) {
     
     return(city)
   })
+  
+  output$text.market.price <- renderText({HTML(paste('This graph looks at barley, corn, and oats market prices in 10 keystone cities in the US along with the cumulative of all of the cities.', 
+                    
+                                       'The vast majority of cities only reported data about corn, with corn prices staying relatively constant from 1975 until 1993. Prices for all of these grain then took a general dip from 1993 until 2000, upon which they all drastically increase to present day. Prices dipped in the years prior to 2000 because the price of raw materials for many commodity goods was extremely low. This had a snowball effect, where the current economic crisis exacerbated price depression even more. Starting at 2000, an exponentially increasing large global population  combined with a decrease of food production in deference to biofuel crops led to a sharp rise in basic food prices. The last phenomenon is known as the 2000s commodities boom.',
+                                       
+                                       'Comparing the different types of grain, corn is very closely correlated to barley. When barley decreases, corn decreases a similar amount, and vice versa. In addition, corn and barley prices are very close in nominal value as well. Oats, on the other hand, is generally nominally cheaper than corn and barley. Also, while oats changes in similar directions to corn and barley, the correlation between oats and the other two is much weaker. Oats only increased at about half the rate of corn and barley. ',                                                                     
+                                       sep='<br/><br/>'))
+  })
  
   
   farm.price.change <- 
@@ -39,7 +47,7 @@ my.server <- function(input, output) {
     filter(SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
     filter(SC_GeographyIndented_Desc == 'United States') 
   
-  output$plot3 <- renderPlot({
+  output$plot.farm.price <- renderPlot({
     prices.farmers <- 
       ggplot(data = farm.price.change) +
       geom_point(mapping = aes(x = Year_ID, y = Amount, color = SC_Attribute_Desc)) +
@@ -52,6 +60,12 @@ my.server <- function(input, output) {
     return(prices.farmers)
   })
   
+  output$text.farm.price <- renderUI({HTML(paste('This graph looks at changes in how much farmers are paid for barley, corn, oats, and sorghum from the 1860s to present day.',
+                                            
+                                            'Once again, the prices farmers receive for barley and corn are extremely similar, in terms of nominal amount and trends; the best fit lines on the graphs look almost identical. Oats and sorghum both change in a similar direction to barley and corn, but are different in terms of volatility. Sorghum follows the same trends of increase and decrease that barley and corn do, but is much more volatile. Essentially, sorghum prices increase more than corn prices when they are increasing, but it also decreases more than corn prices when both are decreasing. Oats is on the opposite end of the spectrum, where the trends are similar to that of corn, but it is much less volatile than corn prices. In other words, when corn prices increase, oats prices increase a smaller amount, and when corn prices decrease, oats prices decrease a smaller amount. In essence, oats prices are more stable and less prone to fluctuations.',
+                                            sep='<br/><br/>'))
+  })
+  
   
   import.countries <- 
     filter(grains, SC_GroupCommod_Desc %in% c("Corn", "Oats", "Barley", "Sorghum")) %>% 
@@ -61,7 +75,7 @@ my.server <- function(input, output) {
     group_by(SC_GroupCommod_Desc, Year_ID, SC_Attribute_Desc) %>% 
     summarise(Amount = sum(Amount))
   
-  output$plot6 <- renderPlot({
+  output$plot.imex <- renderPlot({
     country.port <- 
       ggplot(data = import.countries) +
       geom_point(mapping = aes(x = Year_ID, y = Amount, color = SC_GroupCommod_Desc)) +
@@ -71,6 +85,11 @@ my.server <- function(input, output) {
     return(country.port)
   })
   
+  output$text.imex <- renderUI({HTML(paste('This graph looks at changes in how much farmers are paid for barley, corn, oats, and sorghum from the 1860s to present day.', 
+                                        'Once again, the prices farmers receive for barley and corn are extremely similar, in terms of nominal amount and trends; the best fit lines on the graphs look almost identical. Oats and sorghum both change in a similar direction to barley and corn, but are different in terms of volatility. Sorghum follows the same trends of increase and decrease that barley and corn do, but is much more volatile. Essentially, sorghum prices increase more than corn prices when they are increasing, but it also decreases more than corn prices when both are decreasing. Oats is on the opposite end of the spectrum, where the trends are similar to that of corn, but it is much less volatile than corn prices. In other words, when corn prices increase, oats prices increase a smaller amount, and when corn prices decrease, oats prices decrease a smaller amount. In essence, oats prices are more stable and less prone to fluctuations.',
+                                        sep='<br/><br/>'))
+                                           
+  })
   
   # MAPS #
   
