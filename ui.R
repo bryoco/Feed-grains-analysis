@@ -53,7 +53,9 @@ my.ui <- fluidPage(
                       plotOutput("plot3")),
              
              tabPanel("Plot 6",
-                      plotOutput("plot6"))
+                      plotOutput("plot6")),
+             tabPanel("Plot 9",
+                      plotOutput("plot9"), plotOutput("plot10"),htmlOutput("text.import.export"))
   )
 )
 

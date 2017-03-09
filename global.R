@@ -1,5 +1,5 @@
 #### Dependencies and data ####
-
+library("plyr")
 library("dplyr")
 library("ggplot2")
 library("shiny")
@@ -72,18 +72,17 @@ canada.imex.barley.exp <- filter(imex, imex$ISO3 == "CAN", SC_Commodity_Desc == 
 canada.imex.oats.imp <- filter(imex, imex$ISO3 == "CAN", SC_Commodity_Desc == "Oats", SC_Attribute_Desc == "Imports, to U.S. from specified source")
 canada.imex.oats.exp <- filter(imex, imex$ISO3 == "CAN", SC_Commodity_Desc == "Oats", SC_Attribute_Desc == "Exports, from U.S. to specified destination")
 
-View(filter(imex, imex$ISO3 == "CHN"))
+
 
 china.imex.barley.imp <- filter(imex, imex$ISO3 == "CHN", SC_Commodity_Desc == "Barley", SC_Attribute_Desc == "Imports, to U.S. from specified source")
 china.imex.barley.exp <- filter(imex, imex$ISO3 == "CHN", SC_Commodity_Desc == "Barley", SC_Attribute_Desc == "Exports, from U.S. to specified destination")
 china.imex.oats.imp <- filter(imex, imex$ISO3 == "CHN", SC_Commodity_Desc == "Oats", SC_Attribute_Desc == "Imports, to U.S. from specified source")
 china.imex.oats.exp <- filter(imex, imex$ISO3 == "CHN", SC_Commodity_Desc == "Oats", SC_Attribute_Desc == "Exports, from U.S. to specified destination")
-View(china.imex.oats.imp)
-View(china.imex.barley.imp)
 
-View(filter(imex, imex$ISO3 == "CAN"))
 
-ggplot(canada.imex.barley, aes(Year_ID)) + 
+
+
+ggplot(canada.imex.barley.imp, aes(Year_ID)) + 
   geom_line(aes(y = canada.imex.barley.imp$Amount, colour = "Barley Imports")) + 
   geom_line(aes(y = canada.imex.barley.exp$Amount, colour = "Barley Exports")) + 
   geom_line(aes(y = canada.imex.oats.imp$Amount, colour = "Oats Imports")) + 
