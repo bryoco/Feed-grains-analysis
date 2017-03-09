@@ -31,8 +31,8 @@ my.ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       selectInput('place', label = 'US City', 
-                  choices = unique(market.grains$SC_GeographyIndented_Desc, 
-                                   selected = "U.S. - Memphis, TN")),
+                  choices = c(unique(market.grains$SC_GeographyIndented_Desc), "All Cities"),
+                              selected = "All Cities"),
       selectInput('imex', label = "Type of trade",
                   choices = c("Imports, to U.S. from specified source",
                               "Exports, from U.S. to specified destination")),
@@ -46,14 +46,15 @@ my.ui <- fluidPage(
     
     mainPanel(
       tabsetPanel(type = "tabs",
-                  tabPanel("Plot1", plotOutput('plot1')),
-                  tabPanel("Plot2", plotOutput('plot2')),
-                  tabPanel("Plot3", plotOutput('plot3')),
-                  tabPanel("Plot4", plotOutput('plot4')),
-                  tabPanel("Plot5", plotOutput('plot5')),
-                  tabPanel("Plot6", plotOutput('plot6')),
-                  # Map
-                  tabPanel("Map", plotOutput('map'))
+                  tabPanel("Market Price in the US", plotOutput('plot.farm.price'), cat(
+                    'This graph looks at barley, corn, and oats market prices in 10 keystone cities in the US along with the cumulative of all of the cities. 
+                    \n
+                    The vast majority of cities only reported data about corn, with corn prices staying relatively constant from 1975 until 1993. Prices for all of these grain then took a general dip from 1993 until 2000, upon which they all drastically increase to present day. Prices dipped in the years prior to 2000 because the price of raw materials for many commodity goods was extremely low. This had a snowball effect, where the current economic crisis exacerbated price depression even more. Starting at 2000, an exponentially increasing large global population  combined with a decrease of food production in deference to biofuel crops led to a sharp rise in basic food prices. The last phenomenon is known as the 2000s commodities boom.
+                    \n
+                    Comparing the different types of grain, corn is very closely correlated to barley. When barley decreases, corn decreases a similar amount, and vice versa. In addition, corn and barley prices are very close in nominal value as well. Oats, on the other hand, is generally nominally cheaper than corn and barley. Also, while oats changes in similar directions to corn and barley, the correlation between oats and the other two is much weaker. Oats only increased at about half the rate of corn and barley. '                                                                          
+                    )),
+                  tabPanel("Prices Received by Farmers in the US", plotOutput('plot3')),
+                  tabPanel("Import and Export Data Relative to the US", plotOutput('plot6'))
                   )
     )
   )
