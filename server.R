@@ -173,7 +173,8 @@ my.server <- function(input, output) {
                                            'Once again, the prices farmers receive for barley and corn are extremely similar, in terms of nominal amount and trends; the best fit lines on the graphs look almost identical. Oats and sorghum both change in a similar direction to barley and corn, but are different in terms of volatility. Sorghum follows the same trends of increase and decrease that barley and corn do, but is much more volatile. Essentially, sorghum prices increase more than corn prices when they are increasing, but it also decreases more than corn prices when both are decreasing. Oats is on the opposite end of the spectrum, where the trends are similar to that of corn, but it is much less volatile than corn prices. In other words, when corn prices increase, oats prices increase a smaller amount, and when corn prices decrease, oats prices decrease a smaller amount. In essence, oats prices are more stable and less prone to fluctuations.',
                                            sep='<br/><br/>'))
   })
-  ########################################################################
+  
+  #####
   
   prices.grains.market <- 
     filter(grains, SC_Attribute_Desc %in% c('Prices, market')) %>%
